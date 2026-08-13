@@ -1,0 +1,234 @@
+.hmjhi-native-trigger {
+  display: none !important;
+}
+
+.hmjhi-data-table th:nth-child(4),
+.hmjhi-data-table th:nth-child(5),
+.hmjhi-data-table th:nth-child(6),
+.hmjhi-data-table th:nth-child(7),
+.hmjhi-data-table th:nth-child(8),
+.hmjhi-data-table td:nth-child(4),
+.hmjhi-data-table td:nth-child(5),
+.hmjhi-data-table td:nth-child(6),
+.hmjhi-data-table td:nth-child(7),
+.hmjhi-data-table td:nth-child(8),
+.appinfo-container {
+  display: none !important;
+}
+
+.hmjhi-data-table {
+  min-width: 1100px;
+}
+
+.hmjhi-trend-header {
+  min-width: 400px;
+  width: 400px;
+}
+
+.hmjhi-trend-cell {
+  padding: 12px !important;
+  vertical-align: top !important;
+  width: 400px;
+}
+
+.hmjhi-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 245px;
+  padding: 6px 0;
+}
+
+.hmjhi-month {
+  align-items: center;
+  border-radius: 6px;
+  color: #475467;
+  display: grid;
+  font-size: 12px;
+  grid-template-columns: 38px 70px minmax(105px, 1fr);
+  line-height: 20px;
+  padding: 1px 6px;
+}
+
+.hmjhi-month.is-latest {
+  background: #edf7ff;
+  color: #0a59f7;
+}
+
+.hmjhi-month.is-qualified-month {
+  background: #ecfdf3;
+  color: #067647;
+}
+
+.hmjhi-month.is-qualified-month .hmjhi-mau strong {
+  color: #067647;
+}
+
+.hmjhi-month-label {
+  font-weight: 600;
+}
+
+.hmjhi-mau strong {
+  color: #111827;
+  font-size: 14px;
+}
+
+.hmjhi-month.is-latest .hmjhi-mau strong {
+  color: #0a59f7;
+}
+
+.hmjhi-rating {
+  color: #7a5a00;
+}
+
+.hmjhi-native-status {
+  color: #98a2b3;
+  font-size: 11px;
+  line-height: 16px;
+  padding-left: 6px;
+}
+
+.hmjhi-native-status.is-qualified {
+  background: #ecfdf3;
+  border-radius: 999px;
+  color: #067647;
+  display: inline-flex;
+  font-weight: 600;
+  margin-top: 2px;
+  padding: 2px 8px;
+}
+
+.hmjhi-error {
+  color: #c4320a;
+  font-size: 12px;
+}
+
+.hmjhi-inline-trend-card {
+  background: #fff;
+  border: 1px solid #d9e2f0;
+  border-radius: 12px;
+  box-sizing: border-box;
+  color: #101828;
+  padding: 12px 18px 10px;
+  width: 384px;
+}
+
+.hmjhi-inline-trend-card.is-qualified {
+  background: #fbfffd;
+  border-color: #a9dfca;
+}
+
+.hmjhi-trend-metrics {
+  display: grid;
+  gap: 6px;
+  grid-template-columns: repeat(4, 1fr);
+  margin-bottom: 2px;
+}
+
+.hmjhi-trend-metrics > div {
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.hmjhi-trend-metrics span,
+.hmjhi-trend-metrics strong {
+  display: block;
+}
+
+.hmjhi-trend-metrics span {
+  color: #98a2b3;
+  font-size: 10px;
+  line-height: 15px;
+}
+
+.hmjhi-trend-metrics strong {
+  color: #344054;
+  font-size: 15px;
+  line-height: 22px;
+}
+
+.hmjhi-trend-metrics strong.is-positive {
+  color: #0b9b6c;
+}
+
+.hmjhi-trend-metrics strong.hmjhi-daily-target {
+  color: #0a59f7;
+}
+
+.hmjhi-trend-metrics strong.hmjhi-qualified-value {
+  color: #067647;
+}
+
+.hmjhi-chart {
+  display: block;
+  height: 158px;
+  overflow: visible;
+  width: 344px;
+}
+
+.hmjhi-grid-line {
+  stroke: #edf0f5;
+  stroke-width: 1;
+}
+
+.hmjhi-axis-label {
+  fill: #98a2b3;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 9px;
+}
+
+.hmjhi-chart-area {
+  fill: none;
+  stroke: none;
+}
+
+.hmjhi-chart-line {
+  fill: none;
+  stroke: #0a59f7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.5;
+}
+
+.hmjhi-chart-point {
+  fill: #fff;
+  stroke: #0a59f7;
+  stroke-width: 2;
+}
+
+.hmjhi-inline-trend-card.is-qualified .hmjhi-chart-line {
+  stroke: #0b9b6c;
+}
+
+.hmjhi-inline-trend-card.is-qualified .hmjhi-chart-point {
+  stroke: #0b9b6c;
+}
+
+.hmjhi-point-label {
+  fill: #344054;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.hmjhi-chart.is-dense .hmjhi-point-label {
+  font-size: 7px;
+}
+
+.hmjhi-chart.is-very-dense .hmjhi-point-label {
+  font-size: 5.5px;
+}
+
+.hmjhi-empty-trend {
+  color: #667085;
+  font-size: 13px;
+  padding: 24px 4px 20px;
+  text-align: center;
+}
+
+body.hmjhi-collecting > .common-modal {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: none !important;
+}
