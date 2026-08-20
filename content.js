@@ -51,22 +51,35 @@
     });
   }
 
+  function getNativeStatus(row) {
+    return row.querySelector(':scope > td:nth-child(3) a.link-btn')?.textContent?.trim() ?? '';
+  }
+
   function prioritizeRows(table) {
     const tbody = table.querySelector('tbody');
     if (!tbody) {
       return;
     }
     const rows = getDataRows(table);
-    const rowByAppId = new Map(rows.map((row) => {
-      const appId = row.querySelector(':scope > td:nth-child(2)')?.textContent?.trim() ?? '';
-      return [appId, row];
-    }));
-    const priorityRows = PRIORITY_APP_IDS
-      .map((appId) => rowByAppId.get(appId))
-      .filter(Boolean);
-    const prioritySet = new Set(priorityRows);
-    [...priorityRows, ...rows.filter((row) => !prioritySet.has(row))]
-      .forEach((row) => tbody.appendChild(row));
+    const priorityRank = new Map(PRIORITY_APP_IDS.map((appId, index) => [appId, index]));
+    rows
+      .map((row, originalIndex) => {
+        const appId = row.querySelector(':scope > td:nth-child(2)')?.textContent?.trim() ?? '';
+        const status = getNativeStatus(row);
+        return {
+          row,
+          originalIndex,
+          // “满足”排在后面；未满足或未知状态视为待处理项，排在前面。
+          statusRank: status === '满足' ? 1 : 0,
+          priorityRank: priorityRank.get(appId) ?? Number.MAX_SAFE_INTEGER
+        };
+      })
+      .sort((left, right) => (
+        left.statusRank - right.statusRank
+        || left.priorityRank - right.priorityRank
+        || left.originalIndex - right.originalIndex
+      ))
+      .forEach(({ row }) => tbody.appendChild(row));
   }
 
   function getSnapshotDate() {

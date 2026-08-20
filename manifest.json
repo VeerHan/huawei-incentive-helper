@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "华为激励数据助手",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "在华为 2026 激励计划应用查询页内直接展示各应用的有效月活与评分明细。",
   "content_scripts": [
     {
