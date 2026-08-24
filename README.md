@@ -44,6 +44,19 @@
 
 `personal-config.js` 支持配置优先展示的 AppID 和预置历史数据。公开仓库中的配置为空；请勿提交包含个人 AppID 或业务数据的配置。
 
+## 请作者喝杯咖啡
+
+如果这个项目对你有帮助，欢迎请作者喝杯咖啡。支持完全自愿，感谢每一份鼓励！
+
+<div align="center">
+  <table>
+    <tr>
+      <td align="center"><strong>支付宝</strong><br><img src="./docs/images/support-alipay.jpg" alt="支付宝收款码" width="320"></td>
+      <td align="center"><strong>微信支付</strong><br><img src="./docs/images/support-wechat.jpg" alt="微信支付收款码" width="320"></td>
+    </tr>
+  </table>
+</div>
+
 ## 兼容性
 
 - Chrome Manifest V3
