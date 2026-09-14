@@ -232,3 +232,27 @@ body.hmjhi-collecting > .common-modal {
   pointer-events: none !important;
   transition: none !important;
 }
+
+/* 跟随指针的轻量日期浮层，与图表卡片保持一致。 */
+.hmjhi-hover-tooltip {
+  position: fixed;
+  z-index: 2147483647;
+  pointer-events: none;
+  box-sizing: border-box;
+  min-width: 128px;
+  padding: 10px 12px;
+  border: 1px solid #e4eaf3;
+  border-radius: 9px;
+  background: #fff;
+  color: #344054;
+  box-shadow: 0 4px 16px rgba(16, 24, 40, .12);
+  font: 12px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  white-space: nowrap;
+}
+.hmjhi-hover-tooltip[hidden] { display: none; }
+.hmjhi-hover-date { margin-bottom: 5px; font-weight: 600; }
+.hmjhi-hover-metric { display: flex; align-items: center; justify-content: flex-start; gap: 8px; }
+.hmjhi-hover-metric span { color: #667085; }
+.hmjhi-hover-metric strong { color: #0a59f7; font-size: 15px; font-variant-numeric: tabular-nums; }
+.hmjhi-hover-tooltip.is-qualified .hmjhi-hover-metric strong { color: #0b9b6c; }
+.hmjhi-point-group:hover .hmjhi-chart-point { stroke-width: 3; }

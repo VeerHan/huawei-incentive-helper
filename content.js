@@ -340,8 +340,11 @@
     const labels = coordinates.map((point, index) => {
       const labelOffset = points.length > 14 && index % 2 === 1 ? 15 : 9;
       return `
-        <circle cx="${point.x.toFixed(1)}" cy="${point.y.toFixed(1)}" r="3.5" class="hmjhi-chart-point" />
-        <text x="${point.x.toFixed(1)}" y="${(point.y - labelOffset).toFixed(1)}" text-anchor="middle" class="hmjhi-point-label">${point.mau}</text>
+        <g class="hmjhi-point-group" data-date="${escapeHtml(point.date)}" data-mau="${escapeHtml(String(point.mau))}">
+          <circle cx="${point.x.toFixed(1)}" cy="${point.y.toFixed(1)}" r="3.5" class="hmjhi-chart-point" />
+          <text x="${point.x.toFixed(1)}" y="${(point.y - labelOffset).toFixed(1)}" text-anchor="middle" class="hmjhi-point-label">${point.mau}</text>
+          <circle cx="${point.x.toFixed(1)}" cy="${point.y.toFixed(1)}" r="${Math.min(10, points.length > 1 ? plotWidth / (points.length - 1) / 2 : 10).toFixed(1)}" fill="transparent" pointer-events="all" />
+        </g>
       `;
     }).join('');
 
@@ -518,8 +521,56 @@
     }, 250);
   }
 
+  function installTrendTooltip() {
+    document.getElementById(`${EXTENSION_ID}-trend-tooltip`)?.remove();
+    const tooltip = document.createElement('div');
+    tooltip.id = `${EXTENSION_ID}-trend-tooltip`;
+    tooltip.className = 'hmjhi-hover-tooltip';
+    tooltip.hidden = true;
+    tooltip.setAttribute('role', 'tooltip');
+    const date = document.createElement('div');
+    date.className = 'hmjhi-hover-date';
+    const metric = document.createElement('div');
+    metric.className = 'hmjhi-hover-metric';
+    const label = document.createElement('span');
+    label.textContent = '有效月活';
+    const value = document.createElement('strong');
+    metric.append(label, value);
+    tooltip.append(date, metric);
+    document.body.append(tooltip);
+    let activePoint = null;
+    const hide = () => { tooltip.hidden = true; activePoint = null; };
+    document.addEventListener('pointermove', (event) => {
+      const point = event.target instanceof Element
+        ? event.target.closest('.hmjhi-point-group') : null;
+      if (!point) { hide(); return; }
+      if (activePoint !== point) {
+        activePoint = point;
+        const [year, month, day] = point.dataset.date.split('-');
+        date.textContent = `${year}年${Number(month)}月${Number(day)}日`;
+        value.textContent = point.dataset.mau;
+        tooltip.classList.toggle('is-qualified', Boolean(point.closest('.is-qualified')));
+      }
+      tooltip.hidden = false;
+      const bounds = tooltip.getBoundingClientRect();
+      // 优先显示在指针右下方，临近视口边缘时翻转并保留边距。
+      const left = event.clientX + 12 + bounds.width > window.innerWidth - 8
+        ? event.clientX - bounds.width - 12 : event.clientX + 12;
+      const top = event.clientY + 12 + bounds.height > window.innerHeight - 8
+        ? event.clientY - bounds.height - 12 : event.clientY + 12;
+      tooltip.style.left = `${Math.max(8, left)}px`;
+      tooltip.style.top = `${Math.max(8, top)}px`;
+    });
+    document.addEventListener('pointerout', (event) => {
+      if (!event.relatedTarget) hide();
+    });
+    document.addEventListener('scroll', hide, true);
+    window.addEventListener('blur', hide);
+    window.addEventListener('resize', hide);
+  }
+
   seedKnownHistory();
-  document.getElementById(`${EXTENSION_ID}-trend-tooltip`)?.remove();
+  installTrendTooltip();
   const observer = new MutationObserver(scheduleCollection);
   observer.observe(document.documentElement, { childList: true, subtree: true });
   scheduleCollection();
