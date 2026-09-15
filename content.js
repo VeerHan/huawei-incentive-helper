@@ -291,6 +291,17 @@
     return { remainingDays, remainingMau, dailyNeeded };
   }
 
+  // 只比较相邻自然日，不将上一条记录误当成前一天。
+  function dailyDelta(points, point) {
+    const previousDay = new Date(`${point.date}T00:00:00Z`);
+    if (!Number.isFinite(previousDay.getTime())) return null;
+    previousDay.setUTCDate(previousDay.getUTCDate() - 1);
+    const previousKey = previousDay.toISOString().slice(0, 10);
+    const previous = points.find((item) => item.date === previousKey);
+    if (!previous || !Number.isFinite(Number(previous.mau)) || !Number.isFinite(Number(point.mau))) return null;
+    return Number(point.mau) - Number(previous.mau);
+  }
+
   function buildTrendSvg(points, gradientId, color) {
     const width = 344;
     const height = 158;
@@ -338,9 +349,10 @@
       ? ' is-very-dense'
       : (points.length > 10 ? ' is-dense' : '');
     const labels = coordinates.map((point, index) => {
+      const delta = dailyDelta(points, point);
       const labelOffset = points.length > 14 && index % 2 === 1 ? 15 : 9;
       return `
-        <g class="hmjhi-point-group" data-date="${escapeHtml(point.date)}" data-mau="${escapeHtml(String(point.mau))}">
+        <g class="hmjhi-point-group" data-date="${escapeHtml(point.date)}" data-mau="${escapeHtml(String(point.mau))}" data-delta="${delta === null ? '' : delta}">
           <circle cx="${point.x.toFixed(1)}" cy="${point.y.toFixed(1)}" r="3.5" class="hmjhi-chart-point" />
           <text x="${point.x.toFixed(1)}" y="${(point.y - labelOffset).toFixed(1)}" text-anchor="middle" class="hmjhi-point-label">${point.mau}</text>
           <circle cx="${point.x.toFixed(1)}" cy="${point.y.toFixed(1)}" r="${Math.min(10, points.length > 1 ? plotWidth / (points.length - 1) / 2 : 10).toFixed(1)}" fill="transparent" pointer-events="all" />
@@ -536,7 +548,13 @@
     label.textContent = '有效月活';
     const value = document.createElement('strong');
     metric.append(label, value);
-    tooltip.append(date, metric);
+    const change = document.createElement('div');
+    change.className = 'hmjhi-hover-metric hmjhi-hover-change';
+    const changeLabel = document.createElement('span');
+    changeLabel.textContent = '较前一天';
+    const changeValue = document.createElement('strong');
+    change.append(changeLabel, changeValue);
+    tooltip.append(date, metric, change);
     document.body.append(tooltip);
     let activePoint = null;
     const hide = () => { tooltip.hidden = true; activePoint = null; };
@@ -549,6 +567,9 @@
         const [year, month, day] = point.dataset.date.split('-');
         date.textContent = `${year}年${Number(month)}月${Number(day)}日`;
         value.textContent = point.dataset.mau;
+        const delta = point.dataset.delta;
+        changeValue.textContent = delta === '' || delta === undefined
+          ? '暂无' : (Number(delta) > 0 ? `+${delta}` : delta);
         tooltip.classList.toggle('is-qualified', Boolean(point.closest('.is-qualified')));
       }
       tooltip.hidden = false;

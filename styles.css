@@ -256,3 +256,5 @@ body.hmjhi-collecting > .common-modal {
 .hmjhi-hover-metric strong { color: #0a59f7; font-size: 15px; font-variant-numeric: tabular-nums; }
 .hmjhi-hover-tooltip.is-qualified .hmjhi-hover-metric strong { color: #0b9b6c; }
 .hmjhi-point-group:hover .hmjhi-chart-point { stroke-width: 3; }
+
+.hmjhi-hover-change { margin-top: 3px; }
