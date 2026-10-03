@@ -401,7 +401,7 @@
     const latest = points.at(-1);
     const goalPlan = getGoalPlan(monthKey, latest.date, latest.mau);
     const dailyNeededLabel = goalPlan.dailyNeeded === null
-      ? '已截止'
+      ? '本月已结束'
       : `${goalPlan.dailyNeeded}/天`;
     const gradientId = `${EXTENSION_ID}-area-${appId.slice(-8)}`;
     const metrics = isQualified && qualifiedMonth
@@ -412,10 +412,10 @@
         <div><span>月末评分</span><strong>${qualifiedMonth.rating}</strong></div>
       `
       : `
-        <div><span>最新月活</span><strong>${latest.mau}</strong></div>
+        <div><span>本月月活</span><strong>${latest.mau}</strong></div>
         <div><span>距 400</span><strong>${goalPlan.remainingMau}</strong></div>
-        <div><span>剩余天数</span><strong>${goalPlan.remainingDays}天</strong></div>
-        <div><span>每天需增</span><strong class="hmjhi-daily-target">${dailyNeededLabel}</strong></div>
+        <div><span>本月剩余</span><strong>${goalPlan.remainingDays}天</strong></div>
+        <div><span>本月日增</span><strong class="hmjhi-daily-target">${dailyNeededLabel}</strong></div>
       `;
     return {
       isQualified,
