@@ -287,7 +287,7 @@
     const remainingMau = Math.max(0, GOAL_MAU - latestMau);
     const dailyNeeded = remainingMau === 0
       ? 0
-      : (remainingDays > 0 ? Math.ceil(remainingMau / remainingDays) : null);
+      : (remainingDays > 0 ? remainingMau / remainingDays : null);
     return { remainingDays, remainingMau, dailyNeeded };
   }
 
@@ -402,7 +402,7 @@
     const goalPlan = getGoalPlan(monthKey, latest.date, latest.mau);
     const dailyNeededLabel = goalPlan.dailyNeeded === null
       ? '本月已结束'
-      : `${goalPlan.dailyNeeded}/天`;
+      : `${Number(goalPlan.dailyNeeded.toFixed(1))}/天`;
     const gradientId = `${EXTENSION_ID}-area-${appId.slice(-8)}`;
     const metrics = isQualified && qualifiedMonth
       ? `
