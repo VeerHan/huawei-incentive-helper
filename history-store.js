@@ -64,6 +64,34 @@
     return `portfolio-${(hash >>> 0).toString(16)}`;
   }
 
+  function recoverUnassignedLegacyHistory(store, profileId, appIds, hints) {
+    const legacy = store.profiles[LEGACY_PROFILE_ID];
+    // 尚未确认账号归属的旧版记录，可能包含当前页面之外的应用。
+    // 仅在当前全部应用均存在于旧记录时补齐，明确分过账号的档案不参与恢复。
+    if (!legacy || profileId === LEGACY_PROFILE_ID
+      || legacy.observedAppIds?.length
+      || !appIds.every((appId) => isRecord(legacy.apps?.[appId]))
+      || (Array.isArray(hints) ? hints : []).some((hint) => (
+        hint?.id !== LEGACY_PROFILE_ID
+        && validAppIds(hint?.appIds).some((appId) => appIds.includes(appId))
+      ))) return;
+
+    const target = store.profiles[profileId];
+    for (const appId of appIds) {
+      const previous = legacy.apps[appId];
+      const app = target.apps[appId] ?? { ...previous, months: {} };
+      app.months ??= {};
+      for (const [month, oldPoints] of Object.entries(previous.months ?? {})) {
+        if (!Array.isArray(oldPoints)) continue;
+        const points = new Map(oldPoints.map((point) => [point.date, point]));
+        // 已有日期以新档案为准，恢复操作只补缺失日期。
+        for (const point of app.months[month] ?? []) points.set(point.date, point);
+        app.months[month] = [...points.values()].sort((left, right) => left.date.localeCompare(right.date));
+      }
+      target.apps[appId] = app;
+    }
+  }
+
   function resolveProfile(storage, visibleAppIds, hints = []) {
     const appIds = validAppIds(visibleAppIds);
     if (!appIds.length) return null;
@@ -91,6 +119,7 @@
     const profile = store.profiles[id] ?? { apps: {} };
     profile.observedAppIds = appIds;
     store.profiles[id] = profile;
+    recoverUnassignedLegacyHistory(store, id, appIds, hints);
     writeStore(storage, store);
     return id;
   }
