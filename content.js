@@ -5,8 +5,8 @@
   const TABLE_HEADER = '有效月活及评分';
   const DETAIL_TITLE = '有效活跃及评分明细数据';
   const APP_ID_PATTERN = /^C\d{19}$/;
-  const STORAGE_KEY = 'hmjhi-daily-mau-history-v1';
   const GOAL_MAU = 400;
+  const historyStore = globalThis.HMJHI_HISTORY;
   const personalConfig = globalThis.HMJHI_PERSONAL_CONFIG ?? {};
   const PRIORITY_APP_IDS = Array.isArray(personalConfig.priorityAppIds)
     ? personalConfig.priorityAppIds
@@ -14,6 +14,8 @@
   const processedTables = new WeakSet();
   let collecting = false;
   let observerTimer = 0;
+  let activeProfileId = null;
+  let currentPortfolio = '';
 
   const SEEDED_HISTORY = Array.isArray(personalConfig.seededHistory)
     ? personalConfig.seededHistory
@@ -190,26 +192,15 @@
     cell.appendChild(failure);
   }
 
-  function emptyHistoryStore() {
-    return { version: 1, apps: {} };
-  }
-
   function readHistoryStore() {
-    try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
-      const parsed = raw ? JSON.parse(raw) : emptyHistoryStore();
-      if (!parsed.apps || typeof parsed.apps !== 'object') {
-        return emptyHistoryStore();
-      }
-      return parsed;
-    } catch {
-      return emptyHistoryStore();
-    }
+    if (!activeProfileId) return null;
+    const store = historyStore.readStore(window.localStorage);
+    return store.profiles[activeProfileId] ? store : null;
   }
 
   function writeHistoryStore(store) {
     try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+      historyStore.writeStore(window.localStorage, store);
     } catch {
       // 页面禁用本地存储时仍保留表格增强，不中断读取。
     }
@@ -248,8 +239,18 @@
 
   function seedKnownHistory() {
     const store = readHistoryStore();
-    SEEDED_HISTORY.forEach((point) => upsertHistoryPoint(store, point));
+    if (!store || activeProfileId !== historyStore.LEGACY_PROFILE_ID) return;
+    SEEDED_HISTORY.forEach((point) => upsertHistoryPoint(store.profiles[activeProfileId], point));
     writeHistoryStore(store);
+  }
+
+  function detailMonthKey(value, fallbackYear) {
+    // 兼容旧版纯月份和新版带年份的月份，保留年份以免跨年误配。
+    const match = String(value).trim().match(/^(?:(\d{4})\s*[年/-]\s*)?(\d{1,2})\s*月?$/);
+    if (!match) return null;
+    const month = Number(match[2]);
+    if (month < 1 || month > 12) return null;
+    return `${match[1] ?? fallbackYear}-${String(month).padStart(2, '0')}`;
   }
 
   function cacheDailySnapshot(appName, appId, details) {
@@ -258,14 +259,14 @@
       return;
     }
     const monthKey = date.slice(0, 7);
-    const monthNumber = Number(date.slice(5, 7));
-    const currentMonth = details.find((item) => Number(item.month) === monthNumber);
+    const currentMonth = details.find((item) => detailMonthKey(item.month, date.slice(0, 4)) === monthKey);
     if (!currentMonth || !/^\d+$/.test(currentMonth.mau)) {
       return;
     }
 
     const store = readHistoryStore();
-    upsertHistoryPoint(store, {
+    if (!store) return;
+    upsertHistoryPoint(store.profiles[activeProfileId], {
       date,
       appName,
       appId,
@@ -303,7 +304,7 @@
   }
 
   function buildTrendSvg(points, gradientId, color) {
-    const width = 344;
+    const width = 404;
     const height = 158;
     const padding = { left: 34, right: 18, top: 26, bottom: 28 };
     const plotWidth = width - padding.left - padding.right;
@@ -380,7 +381,7 @@
 
   function buildTrendCard(appId, details, nativeStatus) {
     const store = readHistoryStore();
-    const app = store.apps[appId];
+    const app = store?.profiles[activeProfileId]?.apps[appId];
     const monthKeys = Object.keys(app?.months ?? {}).sort();
     const currentMonthKey = getSnapshotDate()?.slice(0, 7);
     const monthKey = monthKeys.includes(currentMonthKey)
@@ -412,10 +413,10 @@
         <div><span>月末评分</span><strong>${qualifiedMonth.rating}</strong></div>
       `
       : `
-        <div><span>本月月活</span><strong>${latest.mau}</strong></div>
-        <div><span>距 400</span><strong>${goalPlan.remainingMau}</strong></div>
-        <div><span>本月剩余</span><strong>${goalPlan.remainingDays}天</strong></div>
-        <div><span>本月日增</span><strong class="hmjhi-daily-target">${dailyNeededLabel}</strong></div>
+        <div><span>本月有效月活</span><strong>${latest.mau}</strong></div>
+        <div><span>距400月活还差</span><strong>${goalPlan.remainingMau}</strong></div>
+        <div><span>本月剩余天数</span><strong>${goalPlan.remainingDays}天</strong></div>
+        <div><span>日均还需新增</span><strong class="hmjhi-daily-target">${dailyNeededLabel}</strong></div>
       `;
     return {
       isQualified,
@@ -434,7 +435,7 @@
     const referenceHeader = headerRow.querySelector(':scope > th:nth-child(3)');
     const header = referenceHeader?.cloneNode(true) ?? document.createElement('th');
     header.className = `${EXTENSION_ID}-trend-header`;
-    header.setAttribute('width', '400');
+    header.setAttribute('width', '460');
     header.querySelector('.tips-icon')?.remove();
     const label = header.querySelector('.t-cell > span');
     if (label) {
@@ -454,6 +455,23 @@
     }
     const card = buildTrendCard(appId, details, nativeStatus);
     cell.innerHTML = `<section class="${EXTENSION_ID}-inline-trend-card${card.isQualified ? ' is-qualified' : ''}">${card.markup}</section>`;
+  }
+
+  function resolveCurrentProfile(table) {
+    const appIds = getDataRows(table).map((row) => (
+      row.querySelector(':scope > td:nth-child(2)')?.textContent?.trim() ?? ''
+    )).sort();
+    const portfolio = appIds.join('|');
+    if (!portfolio || portfolio === currentPortfolio) return;
+    currentPortfolio = portfolio;
+    try {
+      activeProfileId = historyStore.resolveProfile(
+        window.localStorage, appIds, personalConfig.accountPortfolios
+      );
+      seedKnownHistory();
+    } catch {
+      activeProfileId = null;
+    }
   }
 
   async function collectRow(row) {
@@ -525,6 +543,7 @@
     observerTimer = window.setTimeout(() => {
       const table = findDataTable();
       if (table) {
+        resolveCurrentProfile(table);
         const hasUnprocessedRows = getDataRows(table).some((row) => (
           !row.querySelector(`.${EXTENSION_ID}-details`)
         ));
@@ -590,7 +609,6 @@
     window.addEventListener('resize', hide);
   }
 
-  seedKnownHistory();
   installTrendTooltip();
   const observer = new MutationObserver(scheduleCollection);
   observer.observe(document.documentElement, { childList: true, subtree: true });

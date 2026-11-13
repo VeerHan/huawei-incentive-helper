@@ -16,6 +16,7 @@ trap cleanup EXIT
 mkdir -p "${stage_dir}" "${dist_dir}"
 cp "${script_dir}/manifest.json" "${stage_dir}/manifest.json"
 cp "${script_dir}/personal-config.js" "${stage_dir}/personal-config.js"
+cp "${script_dir}/history-store.js" "${stage_dir}/history-store.js"
 cp "${script_dir}/content.js" "${stage_dir}/content.js"
 cp "${script_dir}/styles.css" "${stage_dir}/styles.css"
 cp "${script_dir}/INSTALL.md" "${stage_dir}/INSTALL.md"
